@@ -17,8 +17,6 @@ from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.stats import skew
-# import emcee
-# from set_sfh import set_sfh
 
 
 # ----- Loading data ----- #
@@ -88,12 +86,8 @@ with PdfPages('hist1.pdf') as pdf:
 			n_fig += 1
 
 		ax = fig.add_subplot(gs[k // n_row, k % n_row])
-		Y = d['samp'][ndiscard0:, :, k].flatten()#[::plot_scale, :]
-		# X = np.linspace(ndiscard0, len(d['samp']), Y.shape[0]+1).astype('int')[1:]
-		# yl, yh = np.percentile(Y, [0.27, 99.73])
-		# ax.set_ylim(yl-np.std(Y), yh+np.std(Y))
+		Y = d['samp'][ndiscard0:, :, k].flatten()
 		ax.tick_params(axis='both', labelsize=11.0)
-		# ax.plot(X, Y, '-', color='k', alpha=0.3)
 		ax.hist(Y, bins=20, histtype='step', linewidth=2.0)
 		ax.tick_params(labelleft=False)
 		ax.text(0.95, 0.95, f"Age = {age[k]:.1f} Gyr", fontsize=11.0,
@@ -103,15 +97,6 @@ with PdfPages('hist1.pdf') as pdf:
 		skewness = skew(Y[Y > 0.])
 		ax.text(0.95, 0.75, f"g1 = {skewness:.2f}", fontsize=11.0, color='red',
 			    ha='right', va='top', transform=ax.transAxes)
-		# ax.text(1.01, 0.95, f"Age = {age[k]:.1f} Gyr", fontsize=12.0,
-		# 	    ha='left', va='top', transform=ax.transAxes)
-		# ax.text(1.01, 0.70, f"[Fe/H] = {feh[k]:.2f}", fontsize=12.0,
-		# 	    ha='left', va='top', transform=ax.transAxes)
-
-		# if ((k % n_row == n_row-1) | (k == np.arange(len(d['mod']))[-1])):
-		# 	ax.set_xlabel('step number', fontsize=12.0)
-		# else:
-		# 	ax.tick_params(labelbottom=False)
 		
 		if (k % (n_row*n_col) == n_row*n_col-1):
 			pdf.savefig()
@@ -119,10 +104,6 @@ with PdfPages('hist1.pdf') as pdf:
 
 	pdf.savefig()
 	plt.close()
-
-
-# weight_par = []
-# weight_err = []
 
 
 # Printing the running time
