@@ -15,7 +15,7 @@ The test Python codes for deriving star-formation history (SFH) from the synthet
   * ``emcee >= 3.0.2`` ([Reference link](https://emcee.readthedocs.io/en/stable/))
 
   
-## Tests
+## Test history
 * [Note 1 (SFH_200616.ipynb)](https://nbviewer.jupyter.org/gist/joungh93/e4a32ee7a62c34d0ed352f564f6e114b): 2020. 06. 16. revised
   * Test data: F456
   * Test models: 4 model CMDs with age = 7.0 - 10.0 Gyr (1.0 Gyr interval) and [Fe/H] = -1.60
