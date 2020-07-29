@@ -40,5 +40,5 @@ The test Python codes for deriving star-formation history (SFH) from the synthet
 
 
 ## Acknowledgements
-* I.S. Jang provided the model CMDs using [Padova ischrone](http://stev.oapd.inaf.it/cgi-bin/cmd) and the observed CMDs obtained by Hubble Space Telescope.
+* I.S. Jang provided the model CMDs using [Padova ischrone](http://stev.oapd.inaf.it/cgi-bin/cmd) and the observed CMDs of NGC 300 obtained by Hubble Space Telescope.
 
