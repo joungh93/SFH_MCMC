@@ -3,7 +3,7 @@
 
 
 ## Description
-The test Python codes for deriving star-formation history(SFH) from the synthetic color-magnitude diagram(CMD) using the MCMC algorithm
+The test Python codes for deriving star-formation history (SFH) from the synthetic color-magnitude diagram (CMD) using the MCMC algorithm
 
 
 ## Prerequisites
