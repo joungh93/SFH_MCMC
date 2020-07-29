@@ -14,6 +14,7 @@ import time
 from scipy.optimize import minimize
 from scipy.stats import truncnorm
 import emcee
+from multiprocessing import Pool
 
 
 # ----- Class & module ----- #
@@ -64,15 +65,12 @@ class set_sfh:
 
 
 	def model_linpar(self, *theta):
-	    for i in np.arange(self.n_model):
-	        x = self.Xm[i,:,:]
-	        tx = np.where(theta[i] > self.llim, theta[i]*x, 0.*x) 
-	        tx = np.where(theta[i] < self.ulim, tx, self.ulim*x) 
-	        if (i == 0):
-	            out = tx
-	        else:
-	            out += tx
-	    return out
+		x = self.Xm
+		t = np.array(theta)
+		t = np.minimum(self.ulim, np.maximum(self.llim, t))
+		tx = np.multiply(t, x.T).T
+
+		return np.sum(tx, axis=0)
 
 
 	def model_logpar(self, *theta):
@@ -107,20 +105,32 @@ class set_sfh:
 		log_prob = lambda x: self.log_posterior(self.model_linpar, self.Y, self.S, *x)
 
 		ndim = self.n_model
-		init = [10.0**ix if ix > np.log10(self.llim) else self.llim for ix in soln.x]
+		init = []
+		for ix in soln.x:
+			if ((ix > np.log10(self.llim)) & (ix < np.log10(self.ulim))):
+				value = 10.0**ix
+			elif (ix <= np.log10(self.llim)):
+				value = self.llim
+			elif (ix >= np.log10(self.ulim)):
+				value = self.ulim
+			init.append(value)
+
 		pos = np.zeros((nwalkers, ndim))
 		for i in np.arange(ndim):
 			pos[:, i] = ((lambda m, s, l, u: truncnorm((l-m)/s, (u-m)/s, loc=m, scale=s))
                          (init[i], sigma, self.llim, self.ulim)).rvs(nwalkers)
 
-		sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob)
-
+		# with Pool() as pool:
+		sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob)#, self.log_prob, pool=pool)
 		start_time = time.time()
 		sampler.run_mcmc(pos, nsteps, progress=True)
-		print("----- running time : {0:.3f} sec".format(time.time()-start_time))
+		end_time = time.time()
+		print("----- running time : {0:.3f} sec".format(end_time-start_time))
 
 		samples = sampler.get_chain()
-		np.savez_compressed('mcmc_samples.npz', samp=samples, obs=[self.obs], mod=self.mod)
+		np.savez_compressed('mcmc_samples.npz', samp=samples,
+			                obs_name=self.obs, mod_name=self.mod,
+			                obs_data=self.Y, mod_data=self.Xm)
 
 		# flat_samples = sampler.get_chain(discard=ndiscard, flat=True)
 
@@ -139,11 +149,22 @@ if (__name__ == '__main__'):
 
 	# Loading data
 	obs_cmd = dir_obs+'F456.fits'
-	model_list = [dir_mod+'a07.00fehm1.60.fits', dir_mod+'a07.50fehm1.60.fits',
-	              dir_mod+'a08.00fehm1.60.fits', dir_mod+'a08.50fehm1.60.fits',
-	              dir_mod+'a09.00fehm1.60.fits', dir_mod+'a09.50fehm1.60.fits',
+	# model_list = glob.glob(dir_mod+'a*fehm1.60.fits')
+	# model_list = sorted(model_list)
+	model_list = [dir_mod+'a08.00fehm1.60.fits',
+	              dir_mod+'a08.20fehm1.60.fits',
+	              dir_mod+'a08.40fehm1.60.fits', 
+	              dir_mod+'a08.60fehm1.60.fits',
+	              dir_mod+'a08.80fehm1.60.fits',
+	              dir_mod+'a09.00fehm1.60.fits',
+	              dir_mod+'a09.20fehm1.60.fits',
+	              dir_mod+'a09.40fehm1.60.fits',
+	              dir_mod+'a09.60fehm1.60.fits',
+	              dir_mod+'a09.80fehm1.60.fits',
 	              dir_mod+'a10.00fehm1.60.fits']
 
 	# MCMC walker
-	s = set_sfh(obs_cmd, model_list, lower_limit=1.0e-4, upper_limit=1.0e+4)
-	sampler = s.mcmc_walk(nwalkers=128, nsteps=5000, sigma=5.0-4)
+	s = set_sfh(obs_cmd, model_list, lower_limit=1.0e-5, upper_limit=1.0e+2)
+	sampler = s.mcmc_walk(nwalkers=128, nsteps=10000, sigma=5.0e-4)
+	# sampler = s.mcmc_walk(nwalkers=64, nsteps=5000, sigma=1.0e-3)
+
